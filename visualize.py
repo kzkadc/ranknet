@@ -40,9 +40,11 @@ def main(args):
 	for i,scores in enumerate(score_table):
 		plt.hist(scores, bins=50, alpha=0.4, histtype="stepfilled", label=i)
 		
-	plt.legend()
+	plt.legend(loc="upper right")
 	plt.xlabel("score")
 	plt.ylabel("frequency")
+	plt.ylim(0,100)
+	plt.xlim(-25,25)
 	plt.savefig(args.o)
 
 if __name__ == "__main__":

@@ -47,7 +47,7 @@ class RankNet(Chain):
 		return h
 		
 	def evaluate(self, s1, s2, t):
-		# 0.5 -> -1にして無視する
+		# 0.5は-1にして評価対象から外す
 		t = (t*2).astype(np.int32)
 		t = np.array(t)
 		t[t==1] = -1
@@ -60,7 +60,9 @@ class RankNet(Chain):
 		return acc
 		
 	def __call__(self, x1, x2, t):
-		# t: x1が大きい場合1、x2が大きい場合0
+		# t = 1 if x1 -> x2
+		#     0 if x2 -> x1
+		#     0.5 otherwise 
 		x1, x2 = Variable(x1), Variable(x2)
 		x1.name, x2.name = "x1", "x2"
 		s1 = self.predict(x1)
@@ -69,10 +71,10 @@ class RankNet(Chain):
 		s2.name = "s2"
 		o = s1 - s2
 		o.name = "o"
-		#loss = F.sigmoid_cross_entropy(s1-s2, t)
+		
 		p = F.sigmoid(o)
-		p.name = "p: probability of being x1>x2"
-		#loss = F.mean(-t*F.log(p)-(1.0-t)*F.log(1.0-p))
+		p.name = "p: probability of being x1 -> x2"
+		
 		loss = F.mean(-t*o + F.softplus(o))
 		loss.name = "loss"
 		
