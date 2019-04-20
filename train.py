@@ -42,16 +42,18 @@ def main(args):
 	trainer.extend(evaluator)
 	trainer.extend(extensions.LogReport())
 	trainer.extend(extensions.ProgressBar())
-	trainer.extend(extensions.PrintReport(["main/loss", "validation/main/loss", "main/accuracy", "validation/main/accuracy"]))
+	trainer.extend(extensions.PrintReport(["epoch", "main/loss", "validation/main/loss", "main/accuracy", "validation/main/accuracy"]))
 	trainer.extend(extensions.PlotReport(["main/loss", "validation/main/loss"], file_name="loss_plot.png"))
-	trainer.extend(extensions.PlotReport(["main/accuracy", "validation/main/accuracy"], file_name="loss_plot.png"))
+	trainer.extend(extensions.PlotReport(["main/accuracy", "validation/main/accuracy"], file_name="accuracy_plot.png"))
+	trainer.extend(extensions.dump_graph("main/loss", "cg.dot"))
+	trainer.extend(extensions.snapshot_object(predictor, "model_epoch_{.updater.epoch:03d}.model"))
 	
 	trainer.run()
 	
 def converter(batch, device=None):
 	x1_array, x2_array, t_array = [], [], []
 	for b in batch:
-		(x1, x2), t = b
+		x1, x2, t = b
 		x1_array.append(x1)
 		x2_array.append(x2)
 		t_array.append(t)
@@ -60,7 +62,7 @@ def converter(batch, device=None):
 	x2_array = np.stack(x2_array)
 	t_array = np.array(t_array)
 	
-	return (x1_array, x2_array), t_array
+	return x1_array, x2_array, t_array
 	
 	
 if __name__ == "__main__":

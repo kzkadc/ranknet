@@ -46,16 +46,12 @@ class RankNet(Chain):
 		])
 		return h
 		
-	def evaluate(self, *in_data):
-		(x1, x2), t = in_data
-		
+	def evaluate(self, s1, s2, t):
 		# 0.5 -> -1にして無視する
 		t = (t*2).astype(np.int32)
+		t = np.array(t)
 		t[t==1] = -1
-		t //= 2
-		
-		s1 = self.predict(x1)
-		s2 = self.predict(x2)
+		t = t//2
 		
 		o = s1 - s2
 		acc = F.binary_accuracy(o, t)
@@ -63,18 +59,25 @@ class RankNet(Chain):
 		
 		return acc
 		
-	def __call__(self, pair:tuple, t):
+	def __call__(self, x1, x2, t):
 		# t: x1が大きい場合1、x2が大きい場合0
-		x1, x2 = pair
+		x1, x2 = Variable(x1), Variable(x2)
+		x1.name, x2.name = "x1", "x2"
 		s1 = self.predict(x1)
+		s1.name = "s1"
 		s2 = self.predict(x2)
-		
+		s2.name = "s2"
+		o = s1 - s2
+		o.name = "o"
 		#loss = F.sigmoid_cross_entropy(s1-s2, t)
-		p = F.sigmoid(s1-s2)
-		loss = F.mean(-t*F.log(p)-(1.0-t)*F.log(1.0-p))
+		p = F.sigmoid(o)
+		p.name = "p: probability of being x1>x2"
+		#loss = F.mean(-t*F.log(p)-(1.0-t)*F.log(1.0-p))
+		loss = F.mean(-t*o + F.softplus(o))
+		loss.name = "loss"
 		
 		chainer.report({"loss":loss}, self)
-		self.evaluate(pair ,t)
+		self.evaluate(s1, s2, t)
 		return loss
 		
 		

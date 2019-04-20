@@ -24,5 +24,5 @@ class MNISTPairDataset(dataset.DatasetMixin):
 		else:
 			t = 0.5
 		
-		return (x1, x2), t
+		return x1, x2, t
 		
