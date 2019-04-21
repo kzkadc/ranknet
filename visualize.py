@@ -17,6 +17,7 @@ def parse_args():
 	parser.add_argument("-m", required=True)
 	parser.add_argument("-b", type=int, default=100)
 	parser.add_argument("-o", default="out.pdf")
+	parser.add_argument("-t", default=None)
 	args = parser.parse_args()
 	pprint.pprint(vars(args))
 	main(args)
@@ -45,6 +46,8 @@ def main(args):
 	plt.ylabel("frequency")
 	plt.ylim(0,100)
 	plt.xlim(-25,25)
+	if args.t is not None:
+		plt.title(args.t)
 	plt.savefig(args.o)
 
 if __name__ == "__main__":
