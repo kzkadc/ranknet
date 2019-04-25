@@ -13,11 +13,11 @@ from model import RankNet
 
 def parse_args():
 	import argparse
-	parser = argparse.ArgumentParser()
-	parser.add_argument("-m", required=True)
-	parser.add_argument("-b", type=int, default=100)
-	parser.add_argument("-o", default="out.pdf")
-	parser.add_argument("-t", default=None)
+	parser = argparse.ArgumentParser(description="visualizes scores for test dataset")
+	parser.add_argument("-m", required=True, help="model file generated from train.py")
+	parser.add_argument("-b", type=int, default=100, help="batch size")
+	parser.add_argument("-o", default="out.pdf", help="output file")
+	parser.add_argument("-t", default=None, help="title of the figure")
 	args = parser.parse_args()
 	pprint.pprint(vars(args))
 	main(args)

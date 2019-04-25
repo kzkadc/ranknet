@@ -13,9 +13,9 @@ import numpy as np
 
 def parse_args():
 	import argparse
-	parser = argparse.ArgumentParser()
-	parser.add_argument("-b", "--batch_size", type=int, default=64)
-	parser.add_argument("-e", "--epoch", type=int, default=10)
+	parser = argparse.ArgumentParser(description="trains a ranking model for mnist")
+	parser.add_argument("-b", "--batch_size", type=int, default=64, help="batch size")
+	parser.add_argument("-e", "--epoch", type=int, default=10, help="epoch")
 	
 	args = parser.parse_args()
 	pprint.pprint(vars(args))
