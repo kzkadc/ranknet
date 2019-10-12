@@ -1,5 +1,4 @@
 # Chainer implementation of RankNet
-https://qiita.com/kzkadc/items/c358338f0d8bd764f514
 
 ## Requirements
 chainer, matplotlib, numpy, tqdm
