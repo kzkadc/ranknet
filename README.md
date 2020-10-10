@@ -1,6 +1,17 @@
-# Chainer implementation of RankNet
+# PyTorch and Chainer implementation of RankNet
 
-## Requirements
+Burges, Christopher, et al. "Learning to rank using gradient descent." Proceedings of the 22nd International Conference on Machine learning (ICML-05). 2005.
+
+## Requirements (PyTorch)
+pytorch, pytorch-ignite, torchviz, numpy tqdm matplotlib
+
+pytorch: see [the official document](https://pytorch.org/get-started/locally/).
+
+```bash
+$ pip install pytorch-ignite torchviz numpy tqdm matplotlib
+```
+
+## Requirements (Chainer)
 chainer, matplotlib, numpy, tqdm
 
 ```bash
