@@ -1,16 +1,14 @@
-# coding: utf-8
+import pprint
 
 import torch
 from torchvision.datasets import MNIST
 from torch.utils.data import DataLoader
 
-import pprint
 import tqdm
 import matplotlib.pyplot as plt
 import numpy as np
 
-
-from model import get_ranknet_model
+from model import create_ranknet_model
 
 
 def parse_args():
@@ -36,12 +34,12 @@ def main(args):
         device = torch.device("cpu")
         print("CPU mode")
 
-    predictor = get_ranknet_model().to(device)
+    predictor = create_ranknet_model().to(device)
     predictor.load_state_dict(torch.load(args.m))
     predictor.eval()
 
     test_dataset = MNIST(root=".", download=True, train=False,
-                         transform=lambda x: np.expand_dims(np.asarray(x, dtype=np.float32), 0)/255)
+                         transform=lambda x: np.expand_dims(np.asarray(x, dtype=np.float32), 0) / 255)
     test_loader = DataLoader(test_dataset, batch_size=args.b, shuffle=False)
 
     score_table = [[] for _ in range(10)]

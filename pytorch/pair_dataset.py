@@ -8,4 +8,11 @@ class MNISTPairDataset(MNIST):
         r = np.random.randint(len(self))
         x2, t2 = super().__getitem__(r)
 
-        return x1, x2, (1.0 if t1 > t2 else 0.0 if t1 < t2 else 0.5)
+        if t1 > t2:
+            label = 1.0
+        elif t1 < t2:
+            label = 0.0
+        else:
+            label = 0.5
+
+        return x1, x2, label
