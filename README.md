@@ -1,21 +1,14 @@
-# PyTorch and Chainer implementation of RankNet
+# PyTorch implementation of RankNet (unofficial)
 
 Burges, Christopher, et al. "Learning to rank using gradient descent." Proceedings of the 22nd International Conference on Machine learning (ICML-05). 2005.
 
-## Requirements (PyTorch)
+## Requirements
 pytorch, pytorch-ignite, torchviz, numpy tqdm matplotlib
 
 pytorch: see [the official document](https://pytorch.org/get-started/locally/).
 
 ```bash
 $ pip install pytorch-ignite torchviz numpy tqdm matplotlib
-```
-
-## Requirements (Chainer)
-chainer, matplotlib, numpy, tqdm
-
-```bash
-$ pip install chainer matplotlib numpy tqdm
 ```
 
 ## Usage
@@ -29,16 +22,18 @@ $ python train.py
 
 ```bash
 $ python train.py -h
-usage: train.py [-h] [-b BATCH_SIZE] [-e EPOCH]
+usage: train.py [-h] [-b BATCH_SIZE] [-e EPOCH] [-g G] [-d D] [--compile_model]
 
 trains a ranking model for mnist
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
-  -b BATCH_SIZE, --batch_size BATCH_SIZE
+  -b, --batch_size BATCH_SIZE
                         batch size
-  -e EPOCH, --epoch EPOCH
-                        epoch
+  -e, --epoch EPOCH     epoch
+  -g G                  GPU ID (negative value indicates CPU)
+  -d D                  result directory
+  --compile_model       enable torch.compile
 ```
 
 2. Visualize scores for test data
