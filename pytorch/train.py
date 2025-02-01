@@ -1,8 +1,7 @@
 import pprint
 import copy
 from pathlib import Path
-from typing import Any, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, InitVar
 
 import torch
 from torch import nn, Tensor
@@ -30,6 +29,8 @@ def parse_args():
     parser.add_argument("-g", type=int, default=-1,
                         help="GPU ID (negative value indicates CPU)")
     parser.add_argument("-d", default="result", help="result directory")
+    parser.add_argument("--compile_model", action="store_true",
+                        help="enable torch.compile")
 
     args = parser.parse_args()
     pprint.pprint(vars(args))
@@ -60,8 +61,8 @@ def main(args):
     predictor = create_ranknet_model().to(device)
     opt = torch.optim.Adam(predictor.parameters())
 
-    trainer = RankNetTrainer(predictor, opt, device)
-    evaluator = RankNetEvaluator(predictor, device)
+    trainer = RankNetTrainer(predictor, opt, device, args.compile_model)
+    evaluator = RankNetEvaluator(predictor, device, args.compile_model)
 
     log = {}
     trainer.add_event_handler(Events.EPOCH_COMPLETED,
@@ -89,19 +90,27 @@ def prepare_batch(batch: tuple[Tensor, Tensor, Tensor], device: torch.device) ->
 
 @dataclass
 class RankNetTrainer(Engine):
-    net: nn.Module
+    net: InitVar[nn.Module]
     opt: Optimizer
     device: torch.device = torch.device("cpu")
+    compile_model: InitVar[bool] = False
 
-    def __post_init__(self):
+    def __post_init__(self, net: nn.Module, compile_model: bool):
         super().__init__(self.update)
+
+        self._net = net
+        if compile_model:
+            try:
+                self._net = torch.compile(net)
+            except RuntimeError as e:
+                print(f"torch.compile failed: {e}")
 
     def update(self, engine: Engine, batch: tuple[Tensor, Tensor, Tensor]) -> Tensor:
         x1, x2, t = prepare_batch(batch, self.device)
-        self.net.train()
+        self._net.train()
         self.opt.zero_grad()
 
-        s1, s2 = self.net(x1), self.net(x2)
+        s1, s2 = self._net(x1), self._net(x2)
         loss = ranknet_loss(s1, s2, t)
         loss.backward()
         self.opt.step()
@@ -111,10 +120,11 @@ class RankNetTrainer(Engine):
 
 @dataclass
 class RankNetEvaluator(Engine):
-    net: nn.Module
+    net: InitVar[nn.Module]
     device: torch.device = torch.device("cpu")
+    compile_model: InitVar[bool] = False
 
-    def __post_init__(self):
+    def __post_init__(self, net: nn.Module, compile_model: bool):
         super().__init__(self.inference)
 
         def _acc_output_transform(output: tuple[Tensor, Tensor, Tensor, Tensor]) -> tuple[Tensor, Tensor]:
@@ -124,11 +134,18 @@ class RankNetEvaluator(Engine):
         Average(lambda t: t[3].item()).attach(self, "loss")
         Accuracy(_acc_output_transform).attach(self, "accuracy")
 
+        self._net = net
+        if compile_model:
+            try:
+                self._net = torch.compile(net)
+            except RuntimeError as e:
+                print(f"torch.compile failed: {e}")
+
     @torch.no_grad()
     def inference(self, engine: Engine, batch: tuple[Tensor, Tensor, Tensor]) -> tuple[Tensor, Tensor, Tensor, Tensor]:
         x1, x2, t = prepare_batch(batch, self.device)
-        self.net.eval()
-        s1, s2 = self.net(x1), self.net(x2)
+        self._net.eval()
+        s1, s2 = self._net(x1), self._net(x2)
         return s1, s2, t, ranknet_loss(s1, s2, t)
 
 
