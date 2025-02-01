@@ -1,3 +1,5 @@
+from typing import Any
+from collections.abc import Sequence
 import pprint
 import copy
 from pathlib import Path
@@ -8,11 +10,11 @@ from torch import nn, Tensor
 from torch.optim import Optimizer
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
+from torchvision import transforms
 from ignite.engine import Engine, Events
 from ignite.metrics import Average, Accuracy
 from torchviz import make_dot
 
-import numpy as np
 import matplotlib.pyplot as plt
 
 from model import create_ranknet_model
@@ -48,12 +50,10 @@ def main(args):
     result_path = Path(args.d)
     result_path.mkdir(parents=True, exist_ok=True)
 
-    transform = lambda x: np.expand_dims(
-        np.asarray(x, dtype=np.float32), 0) / 255
     train_dataset = MNISTPairDataset(
-        root=".", download=True, train=True, transform=transform)
+        root=".", download=True, train=True, transform=transforms.ToTensor())
     test_dataset = MNISTPairDataset(
-        root=".", download=True, train=False, transform=transform)
+        root=".", download=True, train=False, transform=transforms.ToTensor())
 
     train_loader = DataLoader(train_dataset, args.batch_size)
     test_loader = DataLoader(test_dataset, args.batch_size)
